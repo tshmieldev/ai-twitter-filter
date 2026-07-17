@@ -112,8 +112,8 @@
     if (!enabled) return;
     if (article.dataset.aiFilterProcessed) return;
 
-    const text = extractTweetText(article);
-    if (!text) return;
+    const author = extractAuthor(article);
+    const text = `Tweet by user ${author}: ` + (extractTweetText(article) || "<This tweet has no text.>");
 
     const hash = hashText(text);
     article.dataset.aiFilterProcessed = "true";
