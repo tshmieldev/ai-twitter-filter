@@ -6,6 +6,7 @@ const DEFAULT_SETTINGS = {
   filterPrompt:
     "Is this tweet negative, toxic, or complaining? Reply with true to hide it, false to keep it.",
   savedFilters: [],
+  customModels: [],
 };
 
 const els = {
@@ -16,6 +17,10 @@ const els = {
   modelTextField: document.getElementById("modelTextField"),
   modelSelect: document.getElementById("modelSelect"),
   modelSelectField: document.getElementById("modelSelectField"),
+  addCustomOption: document.getElementById("addCustomOption"),
+  customModelField: document.getElementById("customModelField"),
+  customModelInput: document.getElementById("customModelInput"),
+  addCustomModel: document.getElementById("addCustomModel"),
   apiKeyNotice: document.getElementById("apiKeyNotice"),
   savedFilters: document.getElementById("savedFilters"),
   deleteSavedFilter: document.getElementById("deleteSavedFilter"),
@@ -25,6 +30,7 @@ const els = {
 };
 
 let currentSavedFilters = [];
+let currentCustomModels = [];
 
 function updateModelVisibility(provider) {
   if (provider === "openrouter") {
@@ -33,6 +39,19 @@ function updateModelVisibility(provider) {
   } else {
     els.modelTextField.style.display = "";
     els.modelSelectField.style.display = "none";
+  }
+}
+
+function renderCustomModels() {
+  // Remove previously rendered custom options
+  els.modelSelect.querySelectorAll('option[data-custom="true"]').forEach((opt) => opt.remove());
+
+  for (const slug of currentCustomModels) {
+    const opt = document.createElement("option");
+    opt.value = slug;
+    opt.textContent = slug;
+    opt.dataset.custom = "true";
+    els.modelSelect.insertBefore(opt, els.addCustomOption);
   }
 }
 
@@ -69,6 +88,9 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
 
   updateModelVisibility(settings.apiProvider);
   els.apiKeyNotice.style.display = settings.apiKey ? "none" : "block";
+
+  currentCustomModels = settings.customModels || [];
+  renderCustomModels();
 
   if (settings.apiProvider === "openrouter") {
     els.modelSelect.value = settings.model;
@@ -110,7 +132,42 @@ els.model.addEventListener("change", () => {
 });
 
 els.modelSelect.addEventListener("change", () => {
+  if (els.modelSelect.value === "__custom__") {
+    els.customModelField.style.display = "";
+    els.customModelInput.value = "";
+    els.customModelInput.focus();
+    return;
+  }
+  els.customModelField.style.display = "none";
   save("model", els.modelSelect.value);
+});
+
+function addCustomModel() {
+  const slug = els.customModelInput.value.trim();
+  if (!slug || !slug.includes("/")) {
+    showStatus("Enter a valid provider/model slug");
+    return;
+  }
+
+  if (!currentCustomModels.includes(slug)) {
+    currentCustomModels.push(slug);
+    save("customModels", currentCustomModels);
+    renderCustomModels();
+  }
+
+  els.modelSelect.value = slug;
+  save("model", slug);
+  els.customModelField.style.display = "none";
+  showStatus("Model added");
+}
+
+els.addCustomModel.addEventListener("click", addCustomModel);
+
+els.customModelInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addCustomModel();
+  }
 });
 
 els.filterPrompt.addEventListener("change", () => {
