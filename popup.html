@@ -50,7 +50,17 @@
         <option value="meta-llama/llama-4-scout">Llama 4 Scout</option>
         <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
         <option value="moonshotai/kimi-k2.5">Kimi K2.5</option>
+        <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+        <option value="__custom__" id="addCustomOption">+ Add custom model...</option>
       </select>
+    </div>
+
+    <div class="field" id="customModelField" style="display: none;">
+      <label for="customModelInput">Custom OpenRouter Slug</label>
+      <div class="saved-filters-row">
+        <input type="text" id="customModelInput" placeholder="provider/model-slug">
+        <button id="addCustomModel" class="icon-btn" title="Add model">&#x2713;</button>
+      </div>
     </div>
 
     <div class="field">
